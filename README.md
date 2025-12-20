@@ -133,3 +133,8 @@ Contributions and PRs are welcome. Suggested ways to help:
 
 When opening a PR, include tests or a short demo showing the change.
 
+# Wiki
+
+If the README answers *what*, the wiki explains *how* and *why*.
+
+👉 https://github.com/rocksoncodes/Reddit-Problem-Discovery-Service/wiki
