@@ -89,6 +89,9 @@ REDDIT_USER_AGENT      # Reddit API user agent string
 GEMINI_API_KEY         # Gemini / Google LLM API key
 NOTION_API_KEY         # Notion integration key
 NOTION_DB_ID           # Notion database id
+EMAIL_ADDRESS          # Your email address
+EMAIL_APP_PASSWORD     # Your email app password
+RECIPIENT_ADDRESS      # Recipient email address
 ```
 
 Notes:
