@@ -1,4 +1,6 @@
 import smtplib
+import markdown2
+from email.message import EmailMessage
 from smtplib import SMTPAuthenticationError, SMTPConnectError
 from notion_client import APIErrorCode, APIResponseError, Client
 from sqlalchemy.orm import sessionmaker
@@ -12,7 +14,8 @@ Session = sessionmaker(bind=database_engine)
 
 class EgressService:
     def __init__(self):
-        self.queried_briefs = []
+        self.queried_brief = None
+        self.formatted_email = None
         self.notion_key = settings.NOTION_API_KEY
         self.notion_parent_page = settings.NOTION_DB_ID
         self.email_address = settings.EMAIL_ADDRESS
@@ -22,112 +25,136 @@ class EgressService:
         self.session = get_session()
 
 
-    def query_briefs(self) -> list[dict] | None:
+    def query_brief(self):
         try:
-            session = self.session
-            queried_briefs = session.query(ProcessedBriefs).all()
-            queries = []
+            with self.session as session:
+                queried_brief = session.query(ProcessedBriefs).first()
 
-            if not queried_briefs:
-                raise ValueError("No briefs found in the database.")
+                if not queried_brief:
+                    raise ValueError("No briefs found in the database.")
 
-            for brief in queried_briefs:
-                query_results = {
-                    "id": brief.id,
-                    "curated_content" : brief.curated_content
+                query_result = {
+                    "id": queried_brief.id,
+                    "curated_content": queried_brief.curated_content
                 }
-                queries.append(query_results)
 
-
-            logger.info("Successfully queried briefs from the database.")
-            self.queried_briefs = queries
-            return queries
+                logger.info(f"Successfully queried brief ID {queried_brief.id} from the database.")
+                self.queried_brief = query_result
+                return query_result
 
         except Exception as e:
-            logger.error(f"Error querying briefs from the database!:{e}",exc_info=True)
+            logger.error(f"Error querying briefs from the database: {e}", exc_info=True)
             return None
 
 
-    def create_notion_page(self):
+    # UNDER REVIEW & MAINTENANCE:
+    # def create_notion_page(self):
+    #
+    #     content = self.queried_brief
+    #
+    #     if not content:
+    #         self.query_briefs()
+    #         logger.info("No content to publish to Notion. Calling query_briefs()...")
+    #         content = self.queried_brief
+    #
+    #     try:
+    #         response = self.notion_client.pages.create(
+    #             parent={"page_id": self.notion_parent_page},
+    #
+    #             properties = {
+    #                 "title": [
+    #                     {
+    #                         "type":"text",
+    #                         "text":{"content":"My Reddit Report"}
+    #                     }
+    #                 ]
+    #             },
+    #
+    #             children = [
+    #                 {
+    #                     "object": "block",
+    #                     "type": "heading_2",
+    #                     "heading_2": {
+    #                         "rich_text": [
+    #                             {"type": "text", "text": {"content":"Project Proposals"}}
+    #                         ]
+    #                     }
+    #                 },
+    #                 {
+    #                     "object":"block",
+    #                     "type":"paragraph",
+    #                     "paragraph":{
+    #                         "rich_text":[
+    #                             {"type":"text","text":{"content":content[0].get("curated_content")}}
+    #                         ]
+    #                     }
+    #                 }
+    #             ]
+    #         )
+    #
+    #         logger.info("Notion page created successfully.")
+    #         print(response)
+    #
+    #     except APIResponseError as error:
+    #         if error.code == APIErrorCode.ObjectNotFound:
+    #             logger.error("The specified parent page was not found.", exc_info=True)
+    #         else:
+    #             logger.error(f"An error occurred while creating the Notion page:", exc_info=True)
 
-        content = self.queried_briefs
 
+    def _format_email(self):
+
+        if not self.queried_brief or not self.queried_brief.get("curated_content"):
+            logger.warning("No content available to format for email.")
+            self.formatted_email = ""
+            return ""
+
+        content = self.queried_brief.get("curated_content")
         if not content:
-            self.query_briefs()
-            logger.info("No content to publish to Notion. Calling query_briefs().")
-            content = self.queried_briefs
+            logger.warning(f"Brief ID {self.queried_brief.get('id')} has no content.")
+            self.formatted_email = ""
+            return ""
 
         try:
-            response = self.notion_client.pages.create(
-                parent={"page_id": self.notion_parent_page},
+            self.formatted_email = markdown2.markdown(content)
+            logger.info(f"Email formatted for brief ID {self.queried_brief.get('id')}")
+            return self.formatted_email
 
-                properties = {
-                    "title": [
-                        {
-                            "type":"text",
-                            "text":{"content":"My Reddit Report"}
-                        }
-                    ]
-                },
-
-                children = [
-                    {
-                        "object": "block",
-                        "type": "heading_2",
-                        "heading_2": {
-                            "rich_text": [
-                                {"type": "text", "text": {"content":"Project Proposals"}}
-                            ]
-                        }
-                    },
-                    {
-                        "object":"block",
-                        "type":"paragraph",
-                        "paragraph":{
-                            "rich_text":[
-                                {"type":"text","text":{"content":content[0].get("curated_content")}}
-                            ]
-                        }
-                    }
-                ]
-            )
-
-            logger.info("Notion page created successfully.")
-            print(response)
-
-        except APIResponseError as error:
-            if error.code == APIErrorCode.ObjectNotFound:
-                logger.error("The specified parent page was not found.", exc_info=True)
-            else:
-                logger.error(f"An error occurred while creating the Notion page:", exc_info=True)
+        except Exception as e:
+            logger.error(f"Markdown formatting failed: {e}", exc_info=True)
+            self.formatted_email = ""
+            return ""
 
 
-    def send_email(self):
+    def send_email(self, subject="Reddit Report!"):
+
+        if not self.formatted_email:
+            self._format_email()
+
+        if not self.formatted_email:
+            logger.warning("No data to email after formatting. Aborting send.")
+            return
+
         try:
+            msg = EmailMessage()
+            msg["From"] = self.email_address
+            msg["To"] = self.recipient_address
+            msg["Subject"] = subject
+            msg.set_content("This email contains an HTML report.")
+            msg.add_alternative(self.formatted_email, subtype="html")
 
-            content = self.queried_briefs
-
-            if not content:
-                self.query_briefs()
-                logger.info("No data to Email! Calling query_briefs()...")
-                content = self.queried_briefs
-
-            message = content[0].get("curated_content")
-
-            logger.info("Sending report to configured email recipient...")
+            logger.info(f"Sending email to {self.recipient_address}")
 
             with smtplib.SMTP("smtp.gmail.com", 587) as smtp_server:
                 smtp_server.starttls()
                 smtp_server.login(self.email_address, self.email_password)
-                smtp_server.sendmail(self.email_address, self.recipient_address, f"Subject: Reddit Report!\n\n{message}.")
+                smtp_server.send_message(msg)
 
-            logger.info("Email successfully sent!")
+            logger.info("Email successfully sent.")
 
         except SMTPAuthenticationError:
-            logger.error("Authentication error occurred:",exc_info=True)
-
+            logger.error("SMTP authentication failed.", exc_info=True)
         except SMTPConnectError:
-            logger.error("Unable to connect to server or port:",exc_info=True)
-
+            logger.error("SMTP connection failed.", exc_info=True)
         except Exception as e:
-            logger.error(f"Error sending email:{e}", exc_info=True)
+            logger.error(f"Email send failed: {e}", exc_info=True)

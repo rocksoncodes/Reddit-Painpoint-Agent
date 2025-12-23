@@ -22,7 +22,7 @@ def execute_egress_pipeline(choice):
         logger.info("=== Starting Egress pipeline ===")
 
         execute = EgressService()
-        execute.query_briefs()
+        execute.query_brief()
         _send_by_channel(execute, choice)
 
         logger.info("=== Egress pipeline completed successfully ===")

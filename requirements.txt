@@ -37,6 +37,7 @@ tenacity==9.1.2
 tqdm==4.67.1
 typing-inspection==0.4.1
 typing_extensions==4.14.1
+markdown2 ==2.5.4
 update-checker==0.18.0
 urllib3==2.5.0
 websocket-client==1.8.0
