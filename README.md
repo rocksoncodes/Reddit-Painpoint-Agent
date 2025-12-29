@@ -1,126 +1,129 @@
-# Reddit-Problem-Discovery-Service (Reddit-only)
+# Reddit Problem Discovery Service (Reddit-only)
 
 This repository implements a backend-first AI agent that discovers recurring problems and sentiment signals in niche Reddit communities. The project is intentionally focused on Reddit as the single input source; other platforms are out of scope for now.
 
-Quick summary:
+Quick summary
 - Input: Reddit posts & comments (via Reddit API)
-- Process: Text cleaning, sentiment scoring, LLM-based validation (Gemini client)
-- Output: Structured briefs stored in the local database, optional Notion sync (under review), and email delivery
+- Process: Text cleaning, heuristic filtering, sentiment scoring, LLM-based validation (Gemini)
+- Output: Structured problem briefs persisted to the local database and optional exporters (email, Notion)
 
-- Collect posts and comments exclusively from configured subreddits.
-## Why Reddit-only?
-Focusing on one platform keeps ingestion, privacy and evaluation requirements simple and makes prompts and data pipelines more effective for the kinds of conversational structure Reddit provides (posts + nested comments). If you later want other platforms, treat them as another "Input" provider and implement a matching client + ingress service.
+Collect posts and comments exclusively from configured subreddits.
 
-- Basic LLM integration for validation prompts (Gemini/Google LLM; optional)
-## Problem
+# 1. Why Reddit-only?
+Focusing on one platform keeps ingestion, privacy and evaluation requirements simple and makes prompts and data pipelines more effective for the conversational structure Reddit provides (posts + nested comments). If you later want other platforms, add an input client and a matching ingress service.
+
+# 2. Problem
 Manual discovery of recurring, real-world problems across subreddits is slow and noisy. This service automates discovery, validation, and packaging of those findings so teams can act faster.
-- Modular code structure with agents, services and pipelines
-<img width="1832" height="967" alt="image" src="https://github.com/user-attachments/assets/334da5c1-31af-4c92-85b0-3930b28cc464" />
-## Solution (what this repo provides)
-- Periodic collection of posts and comments from configured subreddits.
-- Processing pipelines to filter, summarize and analyze sentiment.
-- LLM-based (Gemini) checks to validate whether a detected issue is a meaningful problem.
-- Outputs: curated briefs are persisted to the local DB and can be emailed or (optionally) synced to Notion.
-# Quick start
-### Prerequisites
-## Tech stack
-Python 3.11+ (tested with 3.13)
-A Reddit app (client ID & secret)
-- Gemini (Google LLM) client (thin wrapper in `clients/`)
-- SQLAlchemy (models + engine in `database/`)
-- Jinja2 templates for egress email rendering (`utils/templates/card.html`)
-- SMTP (Gmail example in `services/egress/egress_service.py`)
-- Structured logging via `utils/logger.py`
 
+# 3. Solution
+- Periodic collection of posts and comments from configured subreddits
+- Processing pipelines to filter, summarize and analyze sentiment
+- LLM-based (Gemini) checks to validate whether a detected issue is a meaningful, recurring problem
+- Outputs: curated briefs persisted to the local DB and optionally exported (email / Notion)
 
-## Key features
-    git clone https://github.com/[your-username]/Market-Scouting-AI-Agent.git
-   ```
+# 4. Quick start
 
-### 2. Create a virtual environment and install dependencies
+### 4.1 Prerequisites
+- Python 3.11+ (tested with 3.13)
+- A Reddit app (client ID & secret)
+- Optional: Gemini (Google LLM) API key
+- Recommended: create a virtual environment
 
-```bash
-    python -m venv .venv
-    .\.venv\Scripts\activate    # Windows
-## Project organization (Input / Process / Output)
-The repository is easiest to reason about when viewed as three layers: Input (acquisition), Process (analysis), and Output (delivery). Below is the mapping to the current folders and files so you can find the code quickly.
+### 4.2 Clone and install
+
+```powershell
+git clone https://github.com/[your-username]/Market-Scouting-AI-Agent.git
+cd Market-Scouting-AI-Agent
+python -m venv .venv
+.\.venv\Scripts\activate       
+pip install -r requirements.txt
 ```
 
-  - `clients/reddit_client.py` — low-level Reddit API wrapper
-  - `services/ingress/` — higher-level ingestion logic & Reddit-specific services
-  - `engines/ingress.py` — runnable ingest engine
+Copy environment template:
+
+```cmd
+copy .env.example .env
 ```
 
-  - `pipelines/` — processing and sentiment pipelines (`sentiment_pipeline.py`, etc.)
-  - `services/core/` — core business logic and LLM validation (`core_service.py`, `sentiment_service.py`)
-  - `engines/core.py` — orchestrates processing runs
-    ```bash
-       python engines\ingest_engine.py
-  - `services/egress/` — email/Notion/sink logic (`egress_service.py`, `storage_service.py`)
-  - `engines/egress.py` — runnable egress engine
-  - `database/` — where processed briefs are persisted
-  - `emails/` + `utils/templates/` — email templates and rendering assets
+### 4.3 Run the engines
+Run the engines in sequence when performing a full workflow. Each engine is an explicit entrypoint so you can run just the step you need.
 
-
-## Recommended alternative folder names
-If you prefer explicit layer names instead of `ingress/core/egress`, here are options ranked by clarity and common usage:
-# Configuration (.env)
-- Simple nouns (explicit):
-  - `input/`  (or `ingest/`)
-  - `process/` (or `analyze/`, `transform/`)
-  - `output/` (or `deliver/`, `publish/`)
-
-- More domain-oriented:
-  - `acquisition/` — `analysis/` — `delivery/`
-
-Notes on renaming: renaming folders is a breaking change for imports. If you do rename them, either update imports across the project or add small package shim modules that re-export the previous paths to preserve compatibility.
-
-
-## Environment variables
-The following environment variables are used by the project (add any others required by your integrations):
-
-``` bash
-REDDIT_CLIENT_ID       # Reddit API client ID
-REDDIT_CLIENT_SECRET   # Reddit API secret
-REDDIT_USER_AGENT      # Reddit API user agent string
-GEMINI_API_KEY         # Gemini / Google LLM API key (optional)
-Optional / output-related:
-NOTION_DB_ID           # (optional) Notion database id
+```cmd
+python engines\ingress.py   # collect posts & comments from Reddit
+python engines\core.py      # processing, validation (LLM), and brief creation
+python engines\egress.py    # export briefs (email / Notion / storage)
 ```
 
-Notes:
-```bash
+# 5. Project organization
+This codebase is easiest to reason about when viewed as three layers: Input (acquisition), Process (analysis & validation) and Output (delivery / storage). The current repository mapping is below so you can find code quickly.
+
+- Input (clients + ingress)
+  - `clients/reddit_client.py`  thin Reddit API adapter
+  - `services/ingress/`  Reddit-specific collectors and ingestion services
+  - `engines/ingress.py`  ingest engine (runner)
+
+
+- Process (pipelines + core services)
+  - `pipelines/`  processing and sentiment pipelines (`ingress_pipeline.py`, `sentiment_pipeline.py`)
+  - `services/core/`  business logic and LLM validation (`core_service.py`, `sentiment_service.py`)
+  - `engines/core.py`  processing/validation runner
+  
+
+- Output (egress / storage)
+  - `services/egress/`  exporters and storage sinks (`egress_service.py`, `storage_service.py`)
+  - `engines/egress.py` egress runner
+  - `database/`  SQLAlchemy models and persistence
+  - `emails/` + `utils/templates/`  email templates and rendering assets
+
+Notes: renaming folders is a breaking change for imports. If you rename layers, update imports or add small shim modules that re-export the old locations.
+
+# 6. Environment variables
+The following environment variables are used by the project (add any others required by your integrations).
+
+```cmd
+REDDIT_CLIENT_ID
+REDDIT_CLIENT_SECRET
+REDDIT_USER_AGENT
+GEMINI_API_KEY         
+NOTION_API_KEY         # optional (Notion sync)
+NOTION_DB_ID           # optional
+EMAIL_ADDRESS
+EMAIL_APP_PASSWORD
+RECIPIENT_ADDRESS
+```
+
 Keep secrets out of version control. Use a secrets manager for production.
-```
 
-# Project structure (overview)
-## How to run (quick start — Windows example)
-- clients/        thin API clients (Reddit, Gemini)
-- engines/        runnable scripts / entrypoints (reddit_ingest, curator)
-- services/       business logic and integrations (scrapers, storage)
-- pipelines/      data processing pipelines (sentiment, curator)
-- database/       SQLAlchemy models and DB initialization
-- utils/          shared helpers
 
-# Development status
+# 7. How the system thinks (short)
+1. Input: collect posts + comments from selected subreddits via Reddit OAuth
+2. Process: normalize text, filter noise, run sentiment & heuristic checks, produce candidates
+3. Validate: run structured LLM prompts (Gemini) + deterministic rules to confirm if a candidate is a real problem
+4. Output: persist validated briefs and export to configured sinks
 
-Branch: MSAA-05-Curator-Agent-Development
 
+# 8. Development status
+- Branch: MSAA-05-Curator-Agent-Development (current)
 - ✅ Project skeleton and core modules
 - ✅ Reddit ingestion and basic data collection
 - ✅ Gemini integration for evaluation
-3. Run a specific engine (example: ingress)
-- 📝 Planned: Notion sync, richer problem-ranking, Email notifications
+- ✅ Notion sync and email notifications
 
+---
 
-# or run processing/evaluation
-# Contributing
-# or send egress outputs
-
+# 9. Contributing
 Contributions and PRs are welcome. Suggested ways to help:
-- Implement planned features from the roadmap
-- Improve data processing and validation prompts
-## Notes & current limitations (explicit)
-- Improve documentation and examples
+- Improve signal quality and filtering
+- Improve processing and validation prompts
+- Add tests and examples for new features
 
 When opening a PR, include tests or a short demo showing the change.
+
+# 10. Notes & limitations
+- This is backend infrastructure, not a UI
+- Focused exclusively on Reddit as a source
+- LLM costs may apply depending on usage
+
+
+# 11. Project Wiki
+See `project wiki/Home.md` for extended rationale, architecture notes and running notes.
