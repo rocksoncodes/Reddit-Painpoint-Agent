@@ -2,7 +2,7 @@ from services.egress_service import EgressService
 from config import settings
 from utils.logger import logger
 
-class EgressController:
+class EgressOrchestrator:
     """
     Controller responsible for co-ordinating the delivery of processed reports.
     """
@@ -11,6 +11,7 @@ class EgressController:
         self.notion_only = settings.CHOICE_ONE
         self.email_only = settings.CHOICE_TWO
         self.all_channels = settings.CHOICE_THREE
+
 
     def _send_by_channel(self, choice):
         """
@@ -23,6 +24,7 @@ class EgressController:
         if choice in (self.email_only, self.all_channels):
             logger.info("Sending email report...")
             self.service.send_email()
+
 
     def run(self, choice):
         """

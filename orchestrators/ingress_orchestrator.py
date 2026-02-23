@@ -2,12 +2,13 @@ from database.init_db import init_db
 from handlers.reddit_handler import scrape_reddit_data, store_reddit_data
 from utils.logger import logger
 
-class IngressController:
+class IngressOrchestrator:
     """
     Controller responsible for co-ordinating the ingestion of Reddit data.
     """
     def __init__(self):
         pass
+
 
     def run(self):
         """

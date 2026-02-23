@@ -1,12 +1,13 @@
 from services.sentiment_service import SentimentService
 from utils.logger import logger
 
-class SentimentController:
+class SentimentOrchestrator:
     """
     Controller responsible for co-ordinating sentiment analysis on stored Reddit data.
     """
     def __init__(self):
         self.service = SentimentService()
+
 
     def run(self):
         """
