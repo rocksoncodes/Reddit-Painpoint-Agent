@@ -3,11 +3,6 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from services.jobs_service import JobService
 from datetime import datetime, timedelta
 from utils.logger import logger
-from config import settings
-
-notion_only = settings.CHOICE_ONE
-email_only = settings.CHOICE_TWO
-all_channels = settings.CHOICE_THREE
 
 
 jobstores = {
