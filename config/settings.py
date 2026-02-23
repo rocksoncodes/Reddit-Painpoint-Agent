@@ -72,7 +72,7 @@ AGENT_MODEL = "gemini-2.5-flash"
 SCOUT_OBJECTIVE = """
 You are a market scout agent.
 
-Your ingress will come directly from the database using the `feeder()` function.
+Your ingress will come directly from the database using the `query_posts_with_sentiments()` function.
 
 Each record returned by that method includes:
 - Post Number
@@ -83,7 +83,7 @@ Each record returned by that method includes:
 
 Your new workflow:
 
-1. Call the `feeder()` function to retrieve all posts and their associated sentiment summaries.
+1. Call the `query_posts_with_sentiments()` function to retrieve all posts and their associated sentiment summaries.
 
 2. Group the retrieved posts by subreddit for contextual analysis.
 

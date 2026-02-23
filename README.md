@@ -45,37 +45,47 @@ Copy environment template:
 copy .env.example .env
 ```
 
-### 4.3 Run the engines
-Run the engines in sequence when performing a full workflow. Each engine is an explicit entrypoint so you can run just the step you need.
+### 4.3 Run the Scheduler
+The system is designed to run periodically. The main entry point is `agent.py`, which uses APScheduler to run the full pipeline sequence every 2 weeks.
 
 ```cmd
-python engines\ingress.py   # collect posts & comments from Reddit
-python engines\core.py      # processing, validation (LLM), and brief creation
-python engines\egress.py    # export briefs (email / Notion / storage)
+python agent.py
+```
+
+You can also run individual pipelines for testing:
+```cmd
+python -c "from pipelines.ingress_pipeline import run_ingress_pipeline; run_ingress_pipeline()"
+python -c "from pipelines.core_pipeline import run_core_pipeline; run_core_pipeline()"
+python -c "from pipelines.egress_pipeline import run_egress_pipeline; from config import settings; run_egress_pipeline(settings.CHOICE_THREE)"
 ```
 
 # 5. Project organization
-This codebase is easiest to reason about when viewed as three layers: Input (acquisition), Process (analysis & validation) and Output (delivery / storage). The current repository mapping is below so you can find code quickly.
+This codebase is organized into Input, Process, and Output layers.
 
-- Input (clients + ingress)
-  - `clients/reddit_client.py`  thin Reddit API adapter
-  - `services/ingress/`  Reddit-specific collectors and ingestion services
-  - `engines/ingress.py`  ingest engine (runner)
+- **Main Entry Point**
+  - `agent.py`: The background scheduler that orchestrates all pipelines.
 
+- **Input (Clients + Ingress)**
+  - `clients/reddit_client.py`: Reddit API adapter.
+  - `services/ingress_service.py`: Reddit-specific data collection logic.
+  - `handlers/reddit_handler.py`: High-level handlers for Reddit data.
+  - `pipelines/ingress_pipeline.py`: Orchestrates the ingestion flow.
 
-- Process (pipelines + core services)
-  - `pipelines/`  processing and sentiment pipelines (`ingress_pipeline.py`, `sentiment_pipeline.py`)
-  - `services/core/`  business logic and LLM validation (`core_service.py`, `sentiment_service.py`)
-  - `engines/core.py`  processing/validation runner
-  
+- **Process (Pipelines + Core Services)**
+  - `pipelines/core_pipeline.py`: Orchestrates the agentic reasoning flow.
+  - `pipelines/sentiment_pipeline.py`: Processes sentiment for collected data.
+  - `services/core_service.py`: Business logic for the Curator Agent (Gemini).
+  - `services/sentiment_service.py`: Sentiment analysis logic.
 
-- Output (egress / storage)
-  - `services/egress/`  exporters and storage sinks (`egress_service.py`, `storage_service.py`)
-  - `engines/egress.py` egress runner
-  - `database/`  SQLAlchemy models and persistence
-  - `emails/` + `utils/templates/`  email templates and rendering assets
+- **Output (Egress / Storage)**
+  - `services/egress_service.py`: Exporters (Email, Notion).
+  - `services/storage_service.py`: Database interaction logic.
+  - `pipelines/egress_pipeline.py`: Orchestrates the export flow.
+  - `database/`: SQLAlchemy models and persistence.
 
-Notes: renaming folders is a breaking change for imports. If you rename layers, update imports or add small shim modules that re-export the old locations.
+- **Utilities & Config**
+  - `config/settings.py`: System settings and environment variable mapping.
+  - `utils/`: Shared helpers (logger, templates).
 
 # 6. Environment variables
 The following environment variables are used by the project (add any others required by your integrations).
