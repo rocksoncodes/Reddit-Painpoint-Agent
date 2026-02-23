@@ -8,6 +8,13 @@ from config import settings
 
 
 class JobService:
+    """
+    Handles scheduled agent jobs.
+
+    This service:
+    - Runs the full pipeline sequence (Ingress -> Core -> Egress).
+    - Cleans up curated records from the database.
+    """
     def __init__(self):
         self.egress_setting = settings.CHOICE_THREE
 
@@ -53,7 +60,7 @@ class JobService:
                 
                 session.query(CuratedItem).delete()
                 session.commit()
-                
+
                 logger.info(f"Successfully cleaned up {len(curated_ids)} curated records")
             else:
                 logger.info("No curated data found to clean up")

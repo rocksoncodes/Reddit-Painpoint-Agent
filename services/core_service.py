@@ -13,7 +13,8 @@ Session = sessionmaker(bind=database_engine)
 
 class CoreService:
     """
-    Service for querying posts with sentiments, executing the curator agent and storing agent responses.
+    Service for querying posts with sentiments, 
+    executing the curator agent and storing agent responses.
     """
 
     def __init__(self):
