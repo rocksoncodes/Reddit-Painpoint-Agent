@@ -17,7 +17,7 @@ scheduler = BlockingScheduler(jobstores=jobstores)
 
 agent_job = JobService()
 
-# Schedule every 2 weeks
+# Schedule pipeline runs every 2 weeks
 scheduler.add_job(
     agent_job.run_all_pipelines,
     trigger="interval",
