@@ -38,8 +38,8 @@ Manual discovery of recurring real-world problems across subreddits is slow and 
 ### Install
 
 ```powershell
-  git clone https://github.com/rocksoncodes/Reddit-Painpoint-Service.git
-  cd Reddit-Painpoint-Service
+  git clone https://github.com/rocksoncodes/Reddit-Painpoint-Agent.git
+  cd Reddit-Painpoint-Agent
   python -m venv .venv
   .\.venv\Scripts\activate
   pip install -r requirements.txt
