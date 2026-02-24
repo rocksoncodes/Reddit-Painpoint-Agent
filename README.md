@@ -1,4 +1,4 @@
-# Reddit Painpoint Service
+# Reddit Painpoint Agent
 
 A backend-first AI agent that discovers recurring problems and sentiment signals in niche Reddit communities.
 
