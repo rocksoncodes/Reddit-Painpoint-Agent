@@ -25,7 +25,6 @@ class IngressPipeline:
             logger.info("Storing scraped data...")
             self.reddit_service.run_reddit_storage(reddit_data)
 
-            logger.info("Sentiment pipeline complete")
             return True
 
         except Exception as e:

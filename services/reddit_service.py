@@ -23,6 +23,7 @@ class RedditService:
         """
         logger.info("Starting Reddit scraping")
         logger.info("Fetching posts")
+        posts = self.scraper.fetch_reddit_posts()
 
         if not posts:
             logger.warning("No posts were fetched. Exiting pipeline.")
