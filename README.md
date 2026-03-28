@@ -1,10 +1,13 @@
 # Reddit Painpoint Agent
 
-A backend-first AI agent that discovers recurring problems and sentiment signals in niche Reddit communities.
+This agent monitors niche subreddits to surface and validate real, recurring frustrations from real people before you write a single line of product code.
 
-- **Input:** Reddit posts & comments (via Reddit API)
-- **Process:** Text cleaning, heuristic filtering, sentiment scoring, LLM validation (Gemini)
-- **Output:** Curated problem briefs persisted to the database and optionally exported (Email, Notion)
+It runs on a scheduled pipeline: collect posts and comments from configured subreddits, score sentiment to filter noise, then use Gemini to produce structured problem briefs your team can actually act on. 
+
+Results are persisted to a database and optionally exported to Notion or delivered by email.
+Built with a clean service/repository architecture, pipeline-based data flow and runtime secrets management via Infisical.
+
+*Flask · SQLAlchemy · Gemini · Reddit API · Infisical*
 
 ## 1. Why Reddit-only?
 
