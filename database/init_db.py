@@ -9,7 +9,7 @@ def init_db():
             "Database initialized successfully (new tables created if missing).")
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
-        raise
+        raise SystemExit
 
 
 if __name__ == "__main__":

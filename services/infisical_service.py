@@ -39,6 +39,7 @@ class InfisicalSecretsService:
             return response
         except Exception as error:
             logger.exception(f"Error authenticating Infisical Client:{error}")
+            raise SystemExit
     
 
     def load_infisical_secrets(self):
@@ -67,7 +68,7 @@ class InfisicalSecretsService:
                 loaded_key_count += 1
                 logger.info(f"{secret.secretKey} has been loaded")
             
-            logger.info(f"{loaded_key_count} infisical secrets have fetched successfully")
+            logger.info(f"{loaded_key_count} infisical secrets have been fetched successfully")
 
             if missing_secrets:
                 for missing_secret in missing_secrets:
@@ -77,3 +78,4 @@ class InfisicalSecretsService:
             return loaded_secrets
         except Exception as error:
             logger.exception(f"Error fetching secrets from infisical: {error}")
+            raise SystemExit

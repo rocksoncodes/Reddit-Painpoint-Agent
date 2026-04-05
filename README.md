@@ -37,6 +37,11 @@ Manual discovery of recurring real-world problems across subreddits is slow and 
 
 ### Install
 
+Simple setup
+```bash
+./setup.sh
+```
+ Manual setup
 ```powershell
   git clone https://github.com/rocksoncodes/Reddit-Painpoint-Agent.git
   cd Reddit-Painpoint-Agent
