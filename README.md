@@ -52,7 +52,7 @@ Manual discovery of recurring real-world problems across subreddits is slow and 
    chmod +x ./setup.sh
    ./setup.sh
    ```
-   *This creates a virtual environment, installs dependencies, and initializes your `.env` file.*
+   *This creates a virtual environment, installs dependencies and initializes your `.env` file.*
 
 #### Option 2. Manual Setup
 
