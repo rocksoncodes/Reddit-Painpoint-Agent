@@ -24,12 +24,17 @@ class JobService:
     def safe_run(self, function):
         def wrapper(*args, **kwargs):
             try:
-                logger.info(f"Running {function.__name__ if hasattr(function, '__name__') else 'anonymous function'}")
+                logger.info(f"Running {function.__name__ if hasattr(function, '__name__') 
+                else 'anonymous function'}")
+
                 result = function(*args, **kwargs)
-                logger.info(f"Finished {function.__name__ if hasattr(function, '__name__') else 'anonymous function'}")
+                logger.info(f"Finished {function.__name__ if hasattr(function, '__name__') 
+                else 'anonymous function'}")
                 return result
+
             except Exception:
-                logger.exception(f"Error running {function.__name__ if hasattr(function, '__name__') else 'anonymous function'}")
+                logger.exception(f"Error running {function.__name__ if hasattr(function, '__name__') 
+                else 'anonymous function'}")
         return wrapper
 
 
