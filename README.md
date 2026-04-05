@@ -40,33 +40,63 @@ Manual discovery of recurring real-world problems across subreddits is slow and 
 
 ### Install
 
-Simple setup
-```bash
-./setup.sh
-```
- Manual setup
-```powershell
-  git clone https://github.com/rocksoncodes/Reddit-Painpoint-Agent.git
-  cd Reddit-Painpoint-Agent
-  python -m venv .venv
-  .\.venv\Scripts\activate
-  pip install -r requirements.txt
-```
+#### Option 1. Automated Setup (Recommended)
 
-Copy the environment template:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/rocksoncodes/Reddit-Painpoint-Agent.git
+   cd Reddit-Painpoint-Agent
+   ```
+2. Run the setup script:
+   ```bash
+   chmod +x ./setup.sh
+   ./setup.sh
+   ```
+   *This creates a virtual environment, installs dependencies, and initializes your `.env` file.*
 
-```cmd
-copy .env.example .env
-```
+#### Option 2. Manual Setup
+
+1. Clone the repository and navigate to the directory.
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   # Windows
+   .\.venv\Scripts\activate
+   # macOS/Linux
+   source .venv/bin/activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Initialize the environment file:
+   ```bash
+   # Windows
+   copy .env.example .env
+   # macOS/Linux
+   cp .env.example .env
+   ```
 
 ### Configure `.env`
 
-The `.env` file only needs the Infisical credentials. All other secrets are loaded from Infisical at runtime:
+Open the `.env` file and fill in your credentials.
 
+**If using Infisical (Recommended for security):**
+You only need to provide the Infisical connection details. The agent will fetch all other secrets from your Infisical project at runtime.
 ```env
 INFISICAL_CLIENT_ID=your_client_id
 INFISICAL_CLIENT_SECRET=your_client_secret
 INFISICAL_PROJECT_ID=your_project_id
+```
+
+**If NOT using Infisical:**
+Leave the Infisical fields blank and fill in the individual secrets directly in the `.env` file (Reddit, Gemini, Database, etc.).
+```env
+REDDIT_CLIENT_ID=your_reddit_id
+REDDIT_CLIENT_SECRET=your_reddit_secret
+GEMINI_API_KEY=your_gemini_key
+DATABASE_URL=sqlite:///database.db
+...
 ```
 
 ### Run

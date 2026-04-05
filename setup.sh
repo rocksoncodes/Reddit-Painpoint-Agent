@@ -1,39 +1,46 @@
 #!/bin/bash
 set -e
 
-# 1. Detect OS
-OS=$(uname | tr '[:upper:]' '[:lower:]')
+echo "Setting up project..."
 
-# 2. Create virtual environment if it doesn't exist or is empty
-if [ ! -d ".venv" ] || [ ! -f ".venv/bin/activate" ] && [ ! -f ".venv/Scripts/activate" ]; then
+# 1. Detect OS
+OS=$(uname -s)
+
+# 2. Set Python command and activate path based on OS
+if [ "$OS" = "Darwin" ] || [ "$OS" = "Linux" ]; then
+    PYTHON_CMD=python3
+    VENV_ACTIVATE=.venv/bin/activate
+else
+    PYTHON_CMD=python
+    VENV_ACTIVATE=.venv/Scripts/activate
+fi
+
+# 3. Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
     echo "Creating virtual environment..."
-    python3 -m venv .venv
+    $PYTHON_CMD -m venv .venv
 else
     echo ".venv already exists. Skipping creation."
 fi
 
-# 3. Activate virtual environment
+# 4. Activate virtual environment
 echo "Activating virtual environment..."
-if [[ "$OS" == "darwin" || "$OS" == "linux" ]]; then
-    source .venv/bin/activate
-elif [[ "$OS" == "mingw"* || "$OS" == "cygwin"* || "$OS" == "msys"* ]]; then
-    source .venv/Scripts/activate
+source $VENV_ACTIVATE
+
+# 4. Copy the example environment variable file
+if [ ! -f ".env" ]; then
+    echo "Setting up env template file..."
+    cp .env.example .env
 else
-    echo "Unknown OS. Please activate .venv manually."
+    echo ".env file already exists. Skipping."
 fi
 
-# 4. Install requirements
+# 5. Install requirements
 if [ -f "requirements.txt" ]; then
-    echo "Installing packages from requirements.txt..."
+    echo "Installing packages..."
     pip install -r requirements.txt
 else
-    echo "requirements.txt not found. Skipping package installation."
+    echo "requirements.txt not found. Skipping."
 fi
 
-# 5. Copy the example environment variable file
-if [ ! -f ".env" ]; then
-  echo "Setting up env template file..."
-  cp .env.example .env
-else
-  echo ".env file already exists. Skipping .env file setup"
-fi
+echo "Setup complete!"

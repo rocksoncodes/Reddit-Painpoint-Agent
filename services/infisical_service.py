@@ -29,27 +29,39 @@ class InfisicalSecretsService:
             ]
 
     def authenticate_inifisical_client(self):
+        client_id = os.getenv("INFISICAL_CLIENT_ID")
+        client_secret = os.getenv("INFISICAL_CLIENT_SECRET")
+
+        if not client_id or not client_secret:
+            logger.warning("Infisical credentials not found. Skipping Infisical authentication.")
+            return None
+
         try:
             logger.info("Authenticating infisical client...")
             response = self.client.auth.universal_auth.login(
-                client_id=os.getenv("INFISICAL_CLIENT_ID"), 
-                client_secret=os.getenv("INFISICAL_CLIENT_SECRET")
+                client_id=client_id, 
+                client_secret=client_secret
             )
             logger.info("Infisical client authenticated successfully.")
             return response
         except Exception as error:
-            logger.exception(f"Error authenticating Infisical Client:{error}")
-            raise SystemExit
+            logger.error(f"Error authenticating Infisical Client: {error}. Falling back to local environment.")
+            return None
     
 
     def load_infisical_secrets(self):
+        project_id = os.getenv("INFISICAL_PROJECT_ID")
+        if not project_id:
+            logger.warning("INFISICAL_PROJECT_ID not found. Skipping secret fetching.")
+            return []
+
         missing_secrets = []
         loaded_secrets = []
 
         try:
             logger.info("Fetching Secrets From Infisical...")
             response = self.client.secrets.list_secrets(
-                project_id = os.getenv("INFISICAL_PROJECT_ID"),
+                project_id = project_id,
                 environment_slug ="dev",
                 secret_path="/"
             )
@@ -77,5 +89,5 @@ class InfisicalSecretsService:
 
             return loaded_secrets
         except Exception as error:
-            logger.exception(f"Error fetching secrets from infisical: {error}")
-            raise SystemExit
+            logger.error(f"Error fetching secrets from infisical: {error}. Falling back to local environment.")
+            return []
