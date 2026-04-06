@@ -1,18 +1,20 @@
 import smtplib
-from pathlib import Path
 from email.message import EmailMessage
+from pathlib import Path
 from smtplib import SMTPAuthenticationError, SMTPConnectError
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from notion_client import APIErrorCode, APIResponseError, Client
-from database import get_session
-from utils.logger import logger
-from utils.helpers import chunk_text, create_notion_blocks, format_email
-from settings import settings
 
+from database import get_session
 from repositories.brief_repository import BriefRepository
+from settings import settings
+from utils.helpers import chunk_text, create_notion_blocks, format_email
+from utils.logger import logger
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 TEMPLATE_DIR = BASE_DIR / "utils" / "templates"
+
 
 class EgressService:
     """
@@ -42,7 +44,6 @@ class EgressService:
             autoescape=select_autoescape(["html"])
         )
 
-
     def query_brief(self):
         """
         Query the database for the first AI processed brief.
@@ -69,7 +70,6 @@ class EgressService:
                 f"Error querying briefs from the database: {e}", exc_info=True)
             return None
 
-
     def create_notion_page(self):
         """
         Create a Notion page with the chunked and formatted content blocks.
@@ -77,21 +77,24 @@ class EgressService:
         if not self.queried_brief:
             self.query_brief()
             if not self.queried_brief:
-                logger.error("No brief available. Aborting Notion page creation.")
+                logger.error(
+                    "No brief available. Aborting Notion page creation.")
                 return
 
         content = self.queried_brief.get("curated_content", "")
         text_blocks = chunk_text(content)
 
         if not text_blocks:
-            logger.warning("No Notion blocks to publish. Aborting page creation...")
+            logger.warning(
+                "No Notion blocks to publish. Aborting page creation...")
             return
 
         notion_blocks = create_notion_blocks(text_blocks)
         self.notion_blocks = notion_blocks
 
         if not notion_blocks:
-            logger.warning("No Notion blocks to publish. Aborting page creation...")
+            logger.warning(
+                "No Notion blocks to publish. Aborting page creation...")
             return
 
         try:
@@ -100,7 +103,8 @@ class EgressService:
                     "object": "block",
                     "type": "heading_2",
                     "heading_2": {
-                        "rich_text": [{"type": "text", "text": {"content": "Discovered Problems"}}]
+                        "rich_text": [{"type": "text", "text": {
+                            "content": "Discovered Problems"}}]
                     }
                 },
                 *notion_blocks
@@ -132,14 +136,14 @@ class EgressService:
             logger.error(
                 f"Unexpected error creating Notion page: {e}", exc_info=True)
 
-
     def send_email(self, subject="Reddit Problem Report!"):
         """
         Format and send the brief as an HTML email to the configured recipient.
         Args:
             subject (str): Subject line for the email.
         """
-        if not self.queried_brief or not self.queried_brief.get("curated_content"):
+        if not self.queried_brief or not self.queried_brief.get(
+            "curated_content"):
             logger.warning("No content available to format for email.")
             return
 

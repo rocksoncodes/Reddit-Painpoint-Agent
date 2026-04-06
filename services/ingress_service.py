@@ -1,8 +1,10 @@
 from typing import Dict, List, Any
-from settings import settings
-from utils.logger import logger
-from utils.helpers import get_posts_from_subreddit, get_comments_from_submission
+
 from clients.reddit_client import get_reddit_client
+from settings import settings
+from utils.helpers import get_posts_from_subreddit, \
+    get_comments_from_submission
+from utils.logger import logger
 
 
 class IngressService:
@@ -23,7 +25,6 @@ class IngressService:
         self.submission_ids = []
         self.comments = []
 
-
     def fetch_reddit_posts(self) -> List[Dict[str, Any]]:
         """
         Fetch Reddit posts from the configured subreddits that meet minimum criteria.
@@ -37,7 +38,8 @@ class IngressService:
         posts: List[Dict[str, Any]] = []
 
         for subreddit_name in self.subreddits:
-            logger.info(f"Fetching posts from r/{subreddit_name} (limit={self.post_limit})...")
+            logger.info(
+                f"Fetching posts from r/{subreddit_name} (limit={self.post_limit})...")
             try:
                 subreddit_posts = get_posts_from_subreddit(
                     self.reddit,
@@ -49,12 +51,13 @@ class IngressService:
                 )
                 posts.extend(subreddit_posts)
             except Exception as e:
-                logger.error(f"Error fetching posts from r/{subreddit_name}: {e}", exc_info=True)
+                logger.error(
+                    f"Error fetching posts from r/{subreddit_name}: {e}",
+                    exc_info=True)
 
         self.posts = posts
         logger.info(f"Collected {len(posts)} posts")
         return posts
-
 
     def fetch_post_ids(self) -> List[str]:
         """
@@ -63,7 +66,8 @@ class IngressService:
             List[str]: List of submission IDs.
         """
         if not self.posts:
-            logger.warning("No posts available. Running fetch_reddit_posts() first...")
+            logger.warning(
+                "No posts available. Running fetch_reddit_posts() first...")
             self.fetch_reddit_posts()
 
         submission_ids: List[str] = []
@@ -76,7 +80,6 @@ class IngressService:
         logger.info(f"Extracted {len(submission_ids)} submission IDs.")
         return submission_ids
 
-
     def fetch_reddit_comments(self) -> List[Dict[str, Any]]:
         """
         Fetch comments for each submission ID collected from posts.
@@ -84,18 +87,24 @@ class IngressService:
             List[Dict[str, Any]]: List of comment data dictionaries.
         """
         if not self.submission_ids:
-            logger.warning("No submission IDs available. Running fetch_post_ids()...")
+            logger.warning(
+                "No submission IDs available. Running fetch_post_ids()...")
             self.fetch_post_ids()
 
         comments_collected: List[Dict[str, Any]] = []
-        logger.info(f"Fetching comments from {len(self.submission_ids)} submissions...")
+        logger.info(
+            f"Fetching comments from {len(self.submission_ids)} submissions...")
 
         for submission_id in self.submission_ids:
             try:
-                comments = get_comments_from_submission(self.reddit, submission_id, self.comment_limit)
+                comments = get_comments_from_submission(self.reddit,
+                                                        submission_id,
+                                                        self.comment_limit)
                 comments_collected.extend(comments)
             except Exception as e:
-                logger.error(f"Error fetching comments for submission {submission_id}: {e}", exc_info=True)
+                logger.error(
+                    f"Error fetching comments for submission {submission_id}: {e}",
+                    exc_info=True)
 
         self.comments = comments_collected
         logger.info(f"Collected {len(comments_collected)} comments")

@@ -1,7 +1,8 @@
 from typing import Dict, Any
+
 from database import get_session
-from repositories.post_repository import PostRepository
 from repositories.comment_repository import CommentRepository
+from repositories.post_repository import PostRepository
 from services.ingress_service import IngressService
 from utils.helpers import ensure_data_integrity
 from utils.logger import logger
@@ -41,7 +42,8 @@ class RedditService:
 
         if not comments:
             logger.warning("No comments were fetched. Exiting pipeline.")
-            return {"posts": posts, "submission_ids": submission_ids, "comments": []}
+            return {"posts": posts, "submission_ids": submission_ids,
+                    "comments": []}
 
         logger.info("Reddit scraping complete")
 

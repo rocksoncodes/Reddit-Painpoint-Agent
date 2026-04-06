@@ -1,13 +1,14 @@
 from services.sentiment_service import SentimentService
 from utils.logger import logger
 
+
 class SentimentPipeline:
     """
     Pipeline responsible for co-ordinating sentiment analysis on stored Reddit data.
     """
+
     def __init__(self):
         self.service = SentimentService()
-
 
     def run(self):
         """
@@ -32,5 +33,6 @@ class SentimentPipeline:
             return True
 
         except Exception as e:
-            logger.error(f"Error in Sentiment Analysis pipeline: {e}", exc_info=True)
+            logger.error(f"Error in Sentiment Analysis pipeline: {e}",
+                         exc_info=True)
             return {"error": str(e)}

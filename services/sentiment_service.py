@@ -1,11 +1,13 @@
+from collections import Counter
+from typing import Dict, List
+
 import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+
+from database import get_session
 from repositories.post_repository import PostRepository
 from repositories.sentiment_repository import SentimentRepository
-from typing import Dict, List
 from utils.helpers import serialize_post, get_comments_for_post
-from nltk.sentiment import SentimentIntensityAnalyzer
-from database import get_session
-from collections import Counter
 from utils.logger import logger
 
 
@@ -24,7 +26,6 @@ class SentimentService:
         self.post_sentiment_scores: List[List[Dict]] = []
         self.post_sentiment_summaries: List[List[Dict]] = []
 
-
     @staticmethod
     def ensure_nltk_resources() -> None:
         """
@@ -35,7 +36,6 @@ class SentimentService:
         except LookupError:
             logger.info("Downloading VADER lexicon...")
             nltk.download("vader_lexicon")
-
 
     def query_posts_with_comments(self) -> List[Dict]:
         """
@@ -58,7 +58,8 @@ class SentimentService:
 
                 post_records.append(serialize_post(post, comment_records))
 
-            logger.info(f"Retrieved {len(posts)} posts and {total_comments} comments")
+            logger.info(
+                f"Retrieved {len(posts)} posts and {total_comments} comments")
 
             self.query_results = post_records
             return post_records
@@ -71,7 +72,6 @@ class SentimentService:
 
         finally:
             self.session.close()
-
 
     def analyze_post_sentiment(self):
         """
@@ -106,7 +106,7 @@ class SentimentService:
 
                     comment_sentiment_scores.append(
                         {"post_key": post_key,
-                            "compound": score["compound"], "label": label}
+                         "compound": score["compound"], "label": label}
                     )
                 post_sentiment_scores.append(comment_sentiment_scores)
 
@@ -118,7 +118,6 @@ class SentimentService:
         self.post_sentiment_scores = post_sentiment_scores
         logger.info("Sentiment analysis complete.")
         return post_sentiment_scores
-
 
     def summarize_post_sentiment(self) -> List[Dict]:
         """
@@ -184,7 +183,6 @@ class SentimentService:
         self.post_sentiment_summaries = summaries
         return summaries
 
-
     def store_sentiment_results(self):
         """
         Store sentiment summaries for posts in the database.
@@ -207,7 +205,7 @@ class SentimentService:
                 post_key = post_sentiment_summary.get("post_key")
                 post_sentiment = post_sentiment_summary.get(
                     "sentiment_summary")
-                
+
                 sentiments_to_store.append({
                     "post_id": post_key,
                     "sentiment_results": post_sentiment
@@ -223,4 +221,3 @@ class SentimentService:
             self.session.rollback()
         finally:
             self.session.close()
-

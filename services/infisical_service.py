@@ -1,16 +1,19 @@
 import os
+
 from dotenv import load_dotenv
 from infisical_sdk import InfisicalSDKClient
+
 from utils.logger import logger
 
 load_dotenv()
+
 
 class InfisicalSecretsService:
     """
     Handles fetching and loading secrets (API keys, passwords, etc.)
     from Infisical a cloud-based secret's manager.
     """
-    
+
     def __init__(self):
         self.client = InfisicalSDKClient(
             host="https://app.infisical.com"
@@ -26,33 +29,35 @@ class InfisicalSecretsService:
             "EMAIL_ADDRESS",
             "EMAIL_APP_PASSWORD",
             "RECIPIENT_ADDRESS"
-            ]
+        ]
 
-    def authenticate_inifisical_client(self):
+    def authenticate_infisical_client(self):
         client_id = os.getenv("INFISICAL_CLIENT_ID")
         client_secret = os.getenv("INFISICAL_CLIENT_SECRET")
 
         if not client_id or not client_secret:
-            logger.warning("Infisical credentials not found. Skipping Infisical authentication.")
+            logger.warning(
+                "Infisical credentials not found. Skipping Infisical authentication.")
             return None
 
         try:
             logger.info("Authenticating infisical client...")
             response = self.client.auth.universal_auth.login(
-                client_id=client_id, 
+                client_id=client_id,
                 client_secret=client_secret
             )
             logger.info("Infisical client authenticated successfully.")
             return response
         except Exception as error:
-            logger.error(f"Error authenticating Infisical Client: {error}. Falling back to local environment.")
+            logger.error(
+                f"Error authenticating Infisical Client: {error}. Falling back to local environment.")
             return None
-    
 
     def load_infisical_secrets(self):
         project_id = os.getenv("INFISICAL_PROJECT_ID")
         if not project_id:
-            logger.warning("INFISICAL_PROJECT_ID not found. Skipping secret fetching.")
+            logger.warning(
+                "INFISICAL_PROJECT_ID not found. Skipping secret fetching.")
             return []
 
         missing_secrets = []
@@ -61,8 +66,8 @@ class InfisicalSecretsService:
         try:
             logger.info("Fetching Secrets From Infisical...")
             response = self.client.secrets.list_secrets(
-                project_id = project_id,
-                environment_slug ="dev",
+                project_id=project_id,
+                environment_slug="dev",
                 secret_path="/"
             )
 
@@ -71,23 +76,28 @@ class InfisicalSecretsService:
 
             for secret in response.secrets:
                 os.environ[secret.secretKey] = secret.secretValue
-                
+
                 if secret.secretKey not in self.secrets:
                     missing_key_count += 1
                     missing_secrets.append(secret.secretKey)
 
-                loaded_secrets.append(f"{secret.secretKey}:{secret.secretValue}")
+                loaded_secrets.append(
+                    f"{secret.secretKey}:{secret.secretValue}")
                 loaded_key_count += 1
                 logger.info(f"{secret.secretKey} has been loaded")
-            
-            logger.info(f"{loaded_key_count} infisical secrets have been fetched successfully")
+
+            logger.info(
+                f"{loaded_key_count} infisical secrets have been fetched successfully")
 
             if missing_secrets:
                 for missing_secret in missing_secrets:
-                    logger.warning(f"{missing_secret} secret not loaded in app secrets list")
-                logger.warning(f"{missing_key_count} secrets have not been loaded")
+                    logger.warning(
+                        f"{missing_secret} secret not loaded in app secrets list")
+                logger.warning(
+                    f"{missing_key_count} secrets have not been loaded")
 
             return loaded_secrets
         except Exception as error:
-            logger.error(f"Error fetching secrets from infisical: {error}. Falling back to local environment.")
+            logger.error(
+                f"Error fetching secrets from infisical: {error}. Falling back to local environment.")
             return []

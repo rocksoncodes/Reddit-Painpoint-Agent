@@ -1,17 +1,19 @@
 from typing import Dict, List
+
 from google.genai import errors
-from settings import settings
-from database import get_session
+
 from clients.gemini_client import initialize_gemini, provide_agent_tools
+from database import get_session
+from repositories.brief_repository import BriefRepository
 from repositories.post_repository import PostRepository
 from repositories.sentiment_repository import SentimentRepository
-from repositories.brief_repository import BriefRepository
+from settings import settings
 from utils.logger import logger
 
 
 class CoreService:
     """
-    Service for querying posts with sentiments, 
+    Service for querying posts with sentiments,
     executing the curator agent and storing agent responses.
     """
 
@@ -24,7 +26,6 @@ class CoreService:
         self.post_with_sentiments = []
         self.curator_agent_response = None
 
-
     def query_posts_with_sentiments(self) -> List[Dict]:
         """
         Call the query_posts_with_sentiments() function to obtain posts and their sentiment analysis results.
@@ -36,7 +37,8 @@ class CoreService:
         logger.info("Querying posts with sentiments")
 
         try:
-            posts_with_sentiments = self.post_repo.get_posts_with_sentiments(limit=10)
+            posts_with_sentiments = self.post_repo.get_posts_with_sentiments(
+                limit=10)
 
             for post, sentiment in posts_with_sentiments:
                 post_with_sentiments = {
@@ -55,9 +57,9 @@ class CoreService:
 
         except Exception as e:
             logger.error(
-                f"Error querying posts with sentiments from the database!:{e}", exc_info=True)
+                f"Error querying posts with sentiments from the database!:{e}",
+                exc_info=True)
             raise SystemExit
-
 
     def execute_curator_agent(self):
         """
@@ -82,7 +84,8 @@ class CoreService:
 
         except errors.ServerError as e:
             logger.error(f"Gemini server error: {e}")
-            return {"error": "Model temporarily unavailable. Please try again later."}
+            return {
+                "error": "Model temporarily unavailable. Please try again later."}
 
         except errors.ClientError as e:
             if "RESOURCE_EXHAUSTED" in str(e):
@@ -95,7 +98,6 @@ class CoreService:
             logger.error(
                 f"Unexpected error while running Market Scout Agent: {e}")
             raise SystemExit("Agent terminated due to an error.")
-
 
     def store_curator_response(self):
         """
@@ -112,7 +114,7 @@ class CoreService:
         try:
             if self.curator_agent_response is not None:
                 self.brief_repo.create_brief(self.curator_agent_response)
-                
+
                 # Mark as curated and record for cleanup
                 post_ids = []
                 for record in self.post_with_sentiments:
@@ -137,8 +139,8 @@ class CoreService:
         except Exception as e:
             self.session.rollback()
             logger.error(
-                f"Failed to store curator response and update curation status: {e}", exc_info=True)
+                f"Failed to store curator response and update curation status: {e}",
+                exc_info=True)
 
         finally:
             self.session.close()
-

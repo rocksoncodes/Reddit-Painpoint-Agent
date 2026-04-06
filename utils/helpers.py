@@ -1,7 +1,9 @@
+from typing import List, Dict, Tuple, Any
+
 import markdown2
 from jinja2 import Environment
 from sqlalchemy.orm import Session
-from typing import List, Dict, Tuple, Any
+
 from database.models import Comment, Post
 from utils.logger import logger
 
@@ -66,7 +68,8 @@ def get_comments_for_post(session, post_id: str) -> Tuple[List[Dict], int]:
     return comment_records, count
 
 
-def get_comments_from_submission(reddit, submission_id: str, comment_limit: int) -> List[Dict[str, Any]]:
+def get_comments_from_submission(reddit, submission_id: str,
+                                 comment_limit: int) -> List[Dict[str, Any]]:
     """
     Fetch and format comments from a single Reddit submission.
 
@@ -105,12 +108,12 @@ def get_comments_from_submission(reddit, submission_id: str, comment_limit: int)
 
 
 def get_posts_from_subreddit(
-        reddit,
-        subreddit_name: str,
-        post_limit: int,
-        min_upvote_ratio: float,
-        min_score: int,
-        min_comments: int
+    reddit,
+    subreddit_name: str,
+    post_limit: int,
+    min_upvote_ratio: float,
+    min_score: int,
+    min_comments: int
 ) -> List[Dict[str, Any]]:
     """
     Fetch and filter posts from a single subreddit.
@@ -128,8 +131,10 @@ def get_posts_from_subreddit(
     """
     posts = []
 
-    subreddit_posts = list(reddit.subreddit(subreddit_name).hot(limit=post_limit))
-    logger.info(f"Retrieved {len(subreddit_posts)} posts from r/{subreddit_name}.")
+    subreddit_posts = list(
+        reddit.subreddit(subreddit_name).hot(limit=post_limit))
+    logger.info(
+        f"Retrieved {len(subreddit_posts)} posts from r/{subreddit_name}.")
 
     for submission in subreddit_posts:
         if (
@@ -171,7 +176,8 @@ def ensure_data_integrity(session: Session, reddit_data) -> list:
     if len(submission_ids_from_posts) == 0:
         return []
 
-    query_results = session.query(Post.submission_id).filter(Post.submission_id.in_(submission_ids_from_posts)).all()
+    query_results = session.query(Post.submission_id).filter(
+        Post.submission_id.in_(submission_ids_from_posts)).all()
 
     existing_submission_ids = set()
     for record in query_results:
@@ -223,7 +229,8 @@ def chunk_text(content: str, max_block_size: int = 2000) -> List[str]:
     return blocks
 
 
-def create_notion_blocks(text_blocks: List[str], safe_max: int = 1950) -> List[Dict]:
+def create_notion_blocks(text_blocks: List[str], safe_max: int = 1950) -> List[
+    Dict]:
     """
     Convert a list of text chunks into Notion paragraph block dicts.
     Args:
@@ -242,7 +249,8 @@ def create_notion_blocks(text_blocks: List[str], safe_max: int = 1950) -> List[D
                     "object": "block",
                     "type": "paragraph",
                     "paragraph": {
-                        "rich_text": [{"type": "text", "text": {"content": chunk}}]
+                        "rich_text": [
+                            {"type": "text", "text": {"content": chunk}}]
                     }
                 })
                 start += safe_max
@@ -263,7 +271,7 @@ def format_email(
     brief_id: Any = None,
 ) -> str:
     """
-    Render a brief's markdown content as an HTML email via a Jinja2 template.
+    Render a brief's Markdown content as an HTML email via a Jinja2 template.
     Args:
         content (str): Markdown content to render.
         jinja_env (Environment): Configured Jinja2 environment.
@@ -289,7 +297,8 @@ def format_email(
         return ""
 
 
-def send_by_channel(service: Any, choice: str, notion_only: str, email_only: str, all_channels: str) -> None:
+def send_by_channel(service: Any, choice: str, notion_only: str,
+                    email_only: str, all_channels: str) -> None:
     """
     Dispatch a processed brief to the appropriate output channels.
     Args:
@@ -306,4 +315,3 @@ def send_by_channel(service: Any, choice: str, notion_only: str, email_only: str
     if choice in (email_only, all_channels):
         logger.info("Sending email report...")
         service.send_email()
-        

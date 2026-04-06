@@ -1,14 +1,17 @@
 from typing import List, Dict
+
 from sqlalchemy.orm import Session
+
 from database.models import Sentiment
+
 
 class SentimentRepository:
     """
     Repository for handling Sentiment database operations.
     """
+
     def __init__(self, session: Session):
         self.session = session
-
 
     def create_sentiments(self, sentiments_data: List[Dict]):
         """
@@ -21,7 +24,6 @@ class SentimentRepository:
                 sentiment_results=data.get("sentiment_results")
             )
             self.session.add(sentiment)
-
 
     def mark_as_curated(self, submission_ids: List[str]):
         """
