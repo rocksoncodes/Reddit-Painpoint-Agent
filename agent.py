@@ -1,9 +1,10 @@
-from apscheduler.schedulers.background import BlockingScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from services.jobs_service import JobService
 from datetime import datetime, timedelta
-from utils.logger import logger
 
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.schedulers.background import BlockingScheduler
+
+from services.jobs_service import JobService
+from utils.logger import logger
 
 job_stores = {
     'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')

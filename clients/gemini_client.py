@@ -1,7 +1,8 @@
-from settings import settings
-from utils.logger import logger
 from google import genai
 from google.genai import types
+
+from settings import settings
+from utils.logger import logger
 
 
 def initialize_gemini() -> genai.Client:

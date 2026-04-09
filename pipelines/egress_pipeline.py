@@ -1,18 +1,19 @@
 from services.egress_service import EgressService
-from utils.helpers import send_by_channel
 from settings import settings
+from utils.helpers import send_by_channel
 from utils.logger import logger
+
 
 class EgressPipeline:
     """
     Pipeline responsible for co-ordinating the delivery of processed reports.
     """
+
     def __init__(self):
         self.service = EgressService()
         self.notion_only = settings.CHOICE_ONE
         self.email_only = settings.CHOICE_TWO
         self.all_channels = settings.CHOICE_THREE
-
 
     def run(self, choice):
         """
@@ -33,5 +34,6 @@ class EgressPipeline:
             return True
 
         except Exception as e:
-            logger.error(f"Error executing Egress pipeline: {e}", exc_info=True)
+            logger.error(f"Error executing Egress pipeline: {e}",
+                         exc_info=True)
             return {"error": str(e)}

@@ -1,5 +1,6 @@
 import praw
 from dotenv import load_dotenv
+
 from settings import settings
 from utils.logger import logger
 

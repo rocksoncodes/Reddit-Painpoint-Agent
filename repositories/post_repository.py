@@ -1,15 +1,17 @@
 from typing import List, Dict, Set
+
 from sqlalchemy.orm import Session
+
 from database.models import Post, CuratedItem
-from utils.logger import logger
+
 
 class PostRepository:
     """
     Repository for handling Post and CuratedItem database operations.
     """
+
     def __init__(self, session: Session):
         self.session = session
-
 
     def create_posts(self, posts_data: List[Dict]) -> int:
         """
@@ -31,7 +33,6 @@ class PostRepository:
             count += 1
         return count
 
-
     def store_posts(self, reddit_data: Dict, validated_ids: Set[str]) -> int:
         """
         Filter posts by validated submission IDs and persist them.
@@ -46,7 +47,6 @@ class PostRepository:
             if post["submission_id"] in validated_ids:
                 posts_to_store.append(post)
         return self.create_posts(posts_to_store)
-
 
     def get_posts_with_sentiments(self, limit: int = 10) -> List:
         """
@@ -67,13 +67,11 @@ class PostRepository:
         """
         return self.session.query(Post).all()
 
-
     def get_posts_by_ids(self, post_ids: List[int]) -> List[Post]:
         """
         Retrieve posts by their primary key IDs.
         """
         return self.session.query(Post).filter(Post.id.in_(post_ids)).all()
-
 
     def mark_as_curated(self, post_ids: List[int]):
         """
@@ -83,14 +81,12 @@ class PostRepository:
             {"is_curated": True}, synchronize_session=False
         )
 
-
     def add_curated_item(self, submission_id: str):
         """
         Add an item to the curated items table for tracking cleanup.
         """
         curated_item = CuratedItem(submission_id=submission_id)
         self.session.merge(curated_item)
-
 
     def get_curated_submission_ids(self) -> List[str]:
         """
@@ -102,15 +98,14 @@ class PostRepository:
             submission_ids.append(row.submission_id)
         return submission_ids
 
-
     def delete_posts_by_submission_ids(self, submission_ids: List[str]):
         """
         Delete posts by their submission IDs.
         """
-        self.session.query(Post).filter(Post.submission_id.in_(submission_ids)).delete(
+        self.session.query(Post).filter(
+            Post.submission_id.in_(submission_ids)).delete(
             synchronize_session=False
         )
-
 
     def delete_all_curated_items(self):
         """

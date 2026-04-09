@@ -1,7 +1,7 @@
-from pipelines.ingress_pipeline import IngressPipeline
-from pipelines.sentiment_pipeline import SentimentPipeline
 from pipelines.core_pipeline import CorePipeline
 from pipelines.egress_pipeline import EgressPipeline
+from pipelines.ingress_pipeline import IngressPipeline
+from pipelines.sentiment_pipeline import SentimentPipeline
 from settings import settings
 
 if __name__ == "__main__":

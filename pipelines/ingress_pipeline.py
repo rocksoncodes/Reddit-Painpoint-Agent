@@ -7,9 +7,9 @@ class IngressPipeline:
     """
     Pipeline responsible for co-ordinating the ingestion of Reddit data.
     """
+
     def __init__(self):
         self.reddit_service = RedditService()
-
 
     def run(self):
         """
@@ -28,5 +28,6 @@ class IngressPipeline:
             return True
 
         except Exception as e:
-            logger.error(f"Error executing Ingress pipeline: {e}", exc_info=True)
+            logger.error(f"Error executing Ingress pipeline: {e}",
+                         exc_info=True)
             return {"error": str(e)}

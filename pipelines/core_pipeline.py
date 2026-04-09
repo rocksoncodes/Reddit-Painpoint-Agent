@@ -1,13 +1,14 @@
 from services.core_service import CoreService
 from utils.logger import logger
 
+
 class CorePipeline:
     """
     Pipeline responsible for co-ordinating the AI curation process.
     """
+
     def __init__(self):
         self.service = CoreService()
-
 
     def run(self):
         """
@@ -26,5 +27,6 @@ class CorePipeline:
             return True
 
         except Exception as e:
-            logger.error(f"Error executing Core Curation pipeline: {e}", exc_info=True)
+            logger.error(f"Error executing Core Curation pipeline: {e}",
+                         exc_info=True)
             return {"error": str(e)}

@@ -1,23 +1,27 @@
 # Reddit Painpoint Agent
 
-This agent monitors niche subreddits to surface and validate real, recurring frustrations from real people before you write a single line of product code.
+This agent monitors niche subreddits to surface and validate real, recurring frustrations from real people before you
+write a single line of product code.
 
-It runs on a scheduled pipeline: collect posts and comments from configured subreddits, score sentiment to filter noise, then use Gemini to produce structured problem briefs your team can actually act on. 
+It runs on a scheduled pipeline: collect posts and comments from configured subreddits, score sentiment to filter noise,
+then use Gemini to produce structured problem briefs your team can actually act on.
 
 Results are persisted to a database and optionally exported to Notion or delivered by email.
-Built with a clean service/repository architecture, pipeline-based data flow and runtime secrets management via Infisical.
+Built with a clean service/repository architecture, pipeline-based data flow and runtime secrets management via
+Infisical.
 
 *Flask · SQLAlchemy · Gemini · Reddit API · Infisical*
 
 ## 1. Why Reddit-only?
 
-Focusing on one platform keeps ingestion, privacy and evaluation requirements simple. Reddit's conversational structure (posts + nested comments) is well-suited to surfacing recurring, real-world problems. Other platforms can be added later by creating a new input client and matching ingress service.
-
+Focusing on one platform keeps ingestion, privacy and evaluation requirements simple. Reddit's conversational
+structure (posts + nested comments) is well-suited to surfacing recurring, real-world problems. Other platforms can be
+added later by creating a new input client and matching ingress service.
 
 ## 2. Problem
 
-Manual discovery of recurring real-world problems across subreddits is slow and noisy. This service automates discovery, validation, and packaging of those findings so teams can act faster.
-
+Manual discovery of recurring real-world problems across subreddits is slow and noisy. This service automates discovery,
+validation, and packaging of those findings so teams can act faster.
 
 ## 3. Solution
 
@@ -26,7 +30,6 @@ Manual discovery of recurring real-world problems across subreddits is slow and 
 - LLM-based curation (Gemini) to produce structured problem briefs
 - Secrets managed dynamically from [Infisical](https://infisical.com) at runtime
 - Output: curated briefs persisted to the database and optionally exported (Email / Notion)
-
 
 ## 4. Quick Start
 
@@ -82,7 +85,9 @@ Manual discovery of recurring real-world problems across subreddits is slow and 
 Open the `.env` file and fill in your credentials.
 
 **If using Infisical (Recommended for security):**
-You only need to provide the Infisical connection details. The agent will fetch all other secrets from your Infisical project at runtime.
+You only need to provide the Infisical connection details. The agent will fetch all other secrets from your Infisical
+project at runtime.
+
 ```env
 INFISICAL_CLIENT_ID=your_client_id
 INFISICAL_CLIENT_SECRET=your_client_secret
@@ -90,7 +95,9 @@ INFISICAL_PROJECT_ID=your_project_id
 ```
 
 **If NOT using Infisical:**
-Leave the Infisical fields blank and fill in the individual secrets directly in the `.env` file (Reddit, Gemini, Database, etc.).
+Leave the Infisical fields blank and fill in the individual secrets directly in the `.env` file (Reddit, Gemini,
+Database, etc.).
+
 ```env
 REDDIT_CLIENT_ID=your_reddit_id
 REDDIT_CLIENT_SECRET=your_reddit_secret
@@ -159,23 +166,24 @@ Reddit-PainPoint-Agent/
 
 ## 6. Secrets Management
 
-Secrets are loaded dynamically at startup using `InfisicalSecretsService`. When the app initializes, `settings/settings.py` authenticates with Infisical and injects all project secrets into the environment before any constants are resolved.
+Secrets are loaded dynamically at startup using `InfisicalSecretsService`. When the app initializes,
+`settings/settings.py` authenticates with Infisical and injects all project secrets into the environment before any
+constants are resolved.
 
 The following secrets should be configured in your Infisical project:
 
-| Secret | Description |
-|---|---|
-| `REDDIT_CLIENT_ID` | Reddit app client ID |
-| `REDDIT_CLIENT_SECRET` | Reddit app client secret |
-| `REDDIT_USER_AGENT` | Reddit API user agent string |
-| `GEMINI_API_KEY` | Google Gemini API key |
-| `NOTION_API_KEY` | Notion integration token *(optional)* |
-| `NOTION_DB_ID` | Notion database ID *(optional)* |
-| `EMAIL_ADDRESS` | Sender email address |
-| `EMAIL_APP_PASSWORD` | Email app password |
-| `RECIPIENT_ADDRESS` | Report recipient email |
-| `DATABASE_URL` | SQLAlchemy database connection URL |
-
+| Secret                 | Description                           |
+|------------------------|---------------------------------------|
+| `REDDIT_CLIENT_ID`     | Reddit app client ID                  |
+| `REDDIT_CLIENT_SECRET` | Reddit app client secret              |
+| `REDDIT_USER_AGENT`    | Reddit API user agent string          |
+| `GEMINI_API_KEY`       | Google Gemini API key                 |
+| `NOTION_API_KEY`       | Notion integration token *(optional)* |
+| `NOTION_DB_ID`         | Notion database ID *(optional)*       |
+| `EMAIL_ADDRESS`        | Sender email address                  |
+| `EMAIL_APP_PASSWORD`   | Email app password                    |
+| `RECIPIENT_ADDRESS`    | Report recipient email                |
+| `DATABASE_URL`         | SQLAlchemy database connection URL    |
 
 ## 7. How it Works
 

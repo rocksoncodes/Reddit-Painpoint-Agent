@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+
 from settings import settings
 
 # ==============================================================================
@@ -10,7 +11,8 @@ DATABASE_URL = settings.DATABASE_URL
 
 database_engine = create_engine(DATABASE_URL, echo=False, future=True)
 
-SessionLocal = sessionmaker(bind=database_engine, autocommit=False, autoflush=False)
+SessionLocal = sessionmaker(bind=database_engine, autocommit=False,
+                            autoflush=False)
 
 Base = declarative_base()
 
@@ -20,7 +22,6 @@ def get_session():
     Utility function to get a new database session.
     """
     return SessionLocal()
-
 
 
 # Imported models at the end to avoid circular dependencies
