@@ -10,6 +10,7 @@ from database import get_session
 from repositories.brief_repository import BriefRepository
 from settings import settings
 from utils.helpers import chunk_text, create_notion_blocks, format_email
+from typing import List, Dict
 from utils.logger import logger
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -58,14 +59,19 @@ class EgressService:
             if not queried_brief:
                 raise ValueError("No briefs found in the database.")
 
-            query_result = {
-                "id": queried_brief.id,
-                "curated_content": queried_brief.curated_content
-            }
+            query_collection: List[Dict] = []
 
-            logger.info(f"Queried brief ID {queried_brief.id}")
-            self.queried_brief = query_result
-            return query_result
+            for result in queried_brief:
+                query_result = {
+                    "id": result.id,
+                    "curated_content": result.curated_content
+                }
+                query_collection.append(query_result)
+
+            logger.info(f"Retrieved {len(query_collection)} brief(s)")
+
+            self.queried_brief = query_collection
+            return query_collection
 
         except Exception as e:
             logger.error(
@@ -85,8 +91,18 @@ class EgressService:
                     "No brief available. Aborting Notion page creation.")
                 return
 
-        content = self.queried_brief.get("curated_content", "")
-        text_blocks = chunk_text(content)
+        for queried_content in self.queried_brief:
+            if not queried_content or not queried_content.get(
+                "curated_content"):
+                logger.warning("No content available to format for Notion.")
+                return
+
+        content = []
+
+        for result in self.queried_brief:
+            content.append(result.get("curated_content"))
+
+        text_blocks = chunk_text("\n\n".join(content))
 
         if not text_blocks:
             logger.warning(
@@ -148,20 +164,28 @@ class EgressService:
         Args:
             subject (str): Subject line for the email.
         """
-        if not self.queried_brief or not self.queried_brief.get(
-            "curated_content"):
-            logger.warning("No content available to format for email.")
-            return
+        if not self.queried_brief:
+            self.query_brief()
+            if not self.queried_brief:
+                logger.error("No brief available to format for email.")
+                return
 
-        content = self.queried_brief.get("curated_content")
-        brief_id = self.queried_brief.get("id")
+        for queried_content in self.queried_brief:
+            if not queried_content or not queried_content.get(
+                "curated_content"):
+                logger.warning("No content available to format for email.")
+                return
+
+        content = []
+
+        for result in self.queried_brief:
+            content.append(result.get("curated_content"))
 
         self.formatted_email = format_email(
-            content = content,
+            content = "\n\n".join(content),
             jinja_env = self.jinja_env,
             title = self.title,
             footer_text = self.footer_text,
-            brief_id = brief_id,
         )
 
         if not self.formatted_email:

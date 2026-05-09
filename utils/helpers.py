@@ -309,7 +309,6 @@ def format_email(
     jinja_env: Environment,
     title: str,
     footer_text: str,
-    brief_id: Any = None,
 ) -> str:
     """
     Render a brief's Markdown content as an HTML email via a Jinja2 template.
@@ -318,7 +317,6 @@ def format_email(
         jinja_env (Environment): Configured Jinja2 environment.
         title (str): Email title / heading.
         footer_text (str): Footer string for the template.
-        brief_id: Optional brief ID for logging.
     Returns:
         str: Rendered HTML string, or empty string on failure.
     """
@@ -330,7 +328,6 @@ def format_email(
             content_html = content_html,
             footer_text = footer_text
         )
-        logger.info(f"Email rendered for brief ID {brief_id}")
         return rendered
 
     except Exception as e:
